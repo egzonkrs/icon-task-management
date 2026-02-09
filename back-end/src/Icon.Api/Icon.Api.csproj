@@ -4,4 +4,14 @@
         <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Icon.Application\Icon.Application.csproj" />
+        <ProjectReference Include="..\Icon.Infrastructure\Icon.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>
+
