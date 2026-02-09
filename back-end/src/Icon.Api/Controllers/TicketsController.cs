@@ -2,9 +2,14 @@ using System.Net;
 using Icon.Api.Contracts.Common;
 using Icon.Api.Contracts.Tickets;
 using Icon.Api.Extensions.Controller;
+using Icon.Application.Features.Tickets.ChangeTicketStatus;
 using Icon.Application.Features.Tickets.Common;
+using Icon.Application.Features.Tickets.CompleteTicket;
 using Icon.Application.Features.Tickets.CreateTicket;
+using Icon.Application.Features.Tickets.DeleteTicket;
 using Icon.Application.Features.Tickets.GetTicketById;
+using Icon.Application.Features.Tickets.GetTickets;
+using Icon.Application.Features.Tickets.UpdateTicket;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,18 +26,17 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     /// Gets all tickets for the current user.
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public Task<IActionResult> GetTickets(CancellationToken cancellationToken = default)
+    [ProducesResponseType(typeof(ApiResponse<GetTicketsResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTickets([FromQuery] bool? isCompleted, [FromQuery] string? search, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var query = new GetTicketsQuery { IsCompleted = isCompleted, Search = search };
+        var result = await mediator.Send(query, cancellationToken);
+        return this.ToActionResult(result);
     }
 
     /// <summary>
     /// Gets a specific ticket by its ID.
     /// </summary>
-    /// <param name="id">The ticket ID.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The ticket details.</returns>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ApiResponse<TicketResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -46,9 +50,6 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     /// <summary>
     /// Creates a new ticket.
     /// </summary>
-    /// <param name="request">The create ticket request.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The created ticket ID.</returns>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -72,9 +73,19 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    public Task<IActionResult> UpdateTicket(Ulid id, [FromBody] UpdateTicketRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> UpdateTicket(Ulid id, [FromBody] UpdateTicketRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var command = new UpdateTicketCommand
+        {
+            Id = id,
+            Title = request.Title,
+            Description = request.Description,
+            Priority = request.Priority.ToString(),
+            DueDate = request.DueDate
+        };
+
+        var result = await mediator.Send(command, cancellationToken);
+        return this.ToActionResult(result);
     }
 
     /// <summary>
@@ -83,9 +94,11 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     [HttpPatch("{id}/status")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    public Task<IActionResult> ChangeTicketStatus(Ulid id, [FromBody] ChangeTicketStatusRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> ChangeTicketStatus(Ulid id, [FromBody] ChangeTicketStatusRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var command = new ChangeTicketStatusCommand { Id = id, Status = request.Status.ToString() };
+        var result = await mediator.Send(command, cancellationToken);
+        return this.ToActionResult(result);
     }
 
     /// <summary>
@@ -94,9 +107,11 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     [HttpPost("{id}/complete")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    public Task<IActionResult> CompleteTicket(Ulid id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> CompleteTicket(Ulid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var command = new CompleteTicketCommand { Id = id };
+        var result = await mediator.Send(command, cancellationToken);
+        return this.ToActionResult(result);
     }
 
     /// <summary>
@@ -105,8 +120,10 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    public Task<IActionResult> DeleteTicket(Ulid id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> DeleteTicket(Ulid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var command = new DeleteTicketCommand { Id = id };
+        var result = await mediator.Send(command, cancellationToken);
+        return this.ToActionResult(result);
     }
 }

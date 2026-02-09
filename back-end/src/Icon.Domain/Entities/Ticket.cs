@@ -50,22 +50,49 @@ public sealed class Ticket : DomainEntity, IEntity<Ulid>
         return ticket;
     }
 
+    public void UpdateDetails(TicketTitle title, TicketDescription description, DateTime? dueDate)
+    {
+        Title = title;
+        Description = description;
+        DueDate = dueDate;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    
+    public void AssignPriority(TicketPriority priority)
+    {
+        Priority = priority;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    
     public void ChangeStatus(TicketStatus newStatus)
     {
         var oldStatus = Status;
         Status = newStatus;
+        UpdatedAt = DateTime.UtcNow;
 
-        if (newStatus is TicketStatus.Done or TicketStatus.Closed)
+        var isNowCompleted = newStatus is TicketStatus.Done or TicketStatus.Closed;
+
+        if (isNowCompleted && !IsCompleted)
         {
             IsCompleted = true;
             CompletedAt = DateTime.UtcNow;
+        }
+        else if (!isNowCompleted && IsCompleted)
+        {
+            IsCompleted = false;
+            CompletedAt = null;
+        }
+
+        RaiseDomainEvent(new TicketStatusChangedDomainEvent(Id, oldStatus, newStatus));
+    }
+    
+    public void MarkAsCompleted()
+    {
+        if (IsCompleted)
+        {
             return;
         }
 
-        IsCompleted = false;
-        CompletedAt = null;
-        UpdatedAt = DateTime.UtcNow;
-        
-        RaiseDomainEvent(new TicketStatusChangedDomainEvent(Id, oldStatus, newStatus));
+        ChangeStatus(TicketStatus.Done);
     }
 }
