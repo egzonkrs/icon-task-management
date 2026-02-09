@@ -2,7 +2,6 @@ namespace Icon.Domain.ValueObjects;
 
 public sealed record TicketTitle
 {
-    public const int MaxLength = 200;
     public string Value { get; }
 
     private TicketTitle(string value) => Value = value;

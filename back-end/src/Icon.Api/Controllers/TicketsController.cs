@@ -2,7 +2,9 @@ using System.Net;
 using Icon.Api.Contracts.Common;
 using Icon.Api.Contracts.Tickets;
 using Icon.Api.Extensions.Controller;
+using Icon.Application.Features.Tickets.Common;
 using Icon.Application.Features.Tickets.CreateTicket;
+using Icon.Application.Features.Tickets.GetTicketById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,11 +20,8 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     /// <summary>
     /// Gets all tickets for the current user.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A list of tickets.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public Task<IActionResult> GetTickets(CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
@@ -35,12 +34,13 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The ticket details.</returns>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<TicketResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
-    public Task<IActionResult> GetTicketById(Ulid id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetTicketById(Ulid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var query = new GetTicketByIdQuery { Id = id };
+        var result = await mediator.Send(query, cancellationToken);
+        return this.ToActionResult(result);
     }
 
     /// <summary>
@@ -52,7 +52,6 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CreateTicket([FromBody] CreateTicketRequest request, CancellationToken cancellationToken = default)
     {
         var command = new CreateTicketCommand
@@ -70,15 +69,9 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     /// <summary>
     /// Updates an existing ticket.
     /// </summary>
-    /// <param name="id">The ticket ID.</param>
-    /// <param name="request">The update ticket request.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>Success status.</returns>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public Task<IActionResult> UpdateTicket(Ulid id, [FromBody] UpdateTicketRequest request, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
@@ -87,15 +80,9 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     /// <summary>
     /// Changes the status of a ticket.
     /// </summary>
-    /// <param name="id">The ticket ID.</param>
-    /// <param name="request">The status change request.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>Success status.</returns>
     [HttpPatch("{id}/status")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public Task<IActionResult> ChangeTicketStatus(Ulid id, [FromBody] ChangeTicketStatusRequest request, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
@@ -104,14 +91,9 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     /// <summary>
     /// Marks a ticket as completed.
     /// </summary>
-    /// <param name="id">The ticket ID.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>Success status.</returns>
     [HttpPost("{id}/complete")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public Task<IActionResult> CompleteTicket(Ulid id, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
@@ -120,14 +102,9 @@ public sealed class TicketsController(IMediator mediator) : ControllerBase
     /// <summary>
     /// Deletes a ticket.
     /// </summary>
-    /// <param name="id">The ticket ID.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>Success status.</returns>
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public Task<IActionResult> DeleteTicket(Ulid id, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
