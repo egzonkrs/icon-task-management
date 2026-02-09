@@ -1,0 +1,18 @@
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Product>$(AssemblyName) ($(TargetFramework))</Product>
+        <DefaultLanguage>en-GB</DefaultLanguage>
+        <Authors>Icon</Authors>
+        <Copyright>© $([System.DateTime]::Now.Year) Icon</Copyright>
+        <RepositoryType>git</RepositoryType>
+        <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+        <Deterministic>False</Deterministic>
+        <LangVersion>latest</LangVersion>
+        <NoWarn>NU5105</NoWarn>
+    </PropertyGroup>
+</Project>
