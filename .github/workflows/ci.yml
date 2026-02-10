@@ -97,8 +97,8 @@ jobs:
 
       - name: Publish back-end
         working-directory: back-end
-        run: dotnet publish src/Icon.Api/Icon.Api.csproj -c Release -o ${{ github.workspace }}/publish
-
+        run: dotnet publish src/Icon.Api/Icon.Api.csproj -c Release -r linux-x64 --self-contained true -o ${{ github.workspace }}/publish
+        
       - name: Copy front-end into wwwroot
         run: |
           mkdir -p ${{ github.workspace }}/publish/wwwroot
