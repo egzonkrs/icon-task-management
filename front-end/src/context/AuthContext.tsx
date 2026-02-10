@@ -1,21 +1,11 @@
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react";
 import { authService } from "@/api";
 import type { AuthUser, LoginRequest, RegisterRequest } from "@/types";
 
-interface AuthState {
+interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-}
-
-interface AuthContextValue extends AuthState {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
@@ -30,103 +20,95 @@ interface AuthContextValue extends AuthState {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  const refreshUser = useCallback(async () => {
+  async function refreshUser() {
     try {
-      const user = await authService.getCurrentUser();
-      setState({ user, isAuthenticated: true, isLoading: false });
+      const currentUser = await authService.getCurrentUser();
+      setUser(currentUser);
+      setIsAuthenticated(true);
     } catch {
-      setState({ user: null, isAuthenticated: false, isLoading: false });
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  }
 
   useEffect(() => {
     refreshUser();
-  }, [refreshUser]);
+  }, []);
 
   useEffect(() => {
-    const handleUnauthorized = () => {
-      setState({ user: null, isAuthenticated: false, isLoading: false });
+    function handleUnauthorized() {
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoading(false);
       setShowLoginModal(true);
-    };
+    }
+
     window.addEventListener("auth:unauthorized", handleUnauthorized);
-    return () =>
-      window.removeEventListener("auth:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
   }, []);
 
-  const login = useCallback(
-    async (data: LoginRequest) => {
-      const user = await authService.login(data);
-      setState({ user, isAuthenticated: true, isLoading: false });
-      setShowLoginModal(false);
-      setShowRegisterModal(false);
-    },
-    []
-  );
+  async function login(data: LoginRequest) {
+    const loggedInUser = await authService.login(data);
+    setUser(loggedInUser);
+    setIsAuthenticated(true);
+    setIsLoading(false);
+    setShowLoginModal(false);
+    setShowRegisterModal(false);
+  }
 
-  const register = useCallback(
-    async (data: RegisterRequest) => {
-      const user = await authService.register(data);
-      setState({ user, isAuthenticated: true, isLoading: false });
-      setShowLoginModal(false);
-      setShowRegisterModal(false);
-    },
-    []
-  );
+  async function register(data: RegisterRequest) {
+    const newUser = await authService.register(data);
+    setUser(newUser);
+    setIsAuthenticated(true);
+    setIsLoading(false);
+    setShowLoginModal(false);
+    setShowRegisterModal(false);
+  }
 
-  const logout = useCallback(async () => {
+  async function logout() {
     await authService.logout();
-    setState({ user: null, isAuthenticated: false, isLoading: false });
-  }, []);
+    setUser(null);
+    setIsAuthenticated(false);
+    setIsLoading(false);
+  }
 
-  const openLoginModal = useCallback(() => {
+  function openLoginModal() {
     setShowRegisterModal(false);
     setShowLoginModal(true);
-  }, []);
+  }
 
-  const openRegisterModal = useCallback(() => {
+  function openRegisterModal() {
     setShowLoginModal(false);
     setShowRegisterModal(true);
-  }, []);
+  }
 
-  const closeAuthModals = useCallback(() => {
+  function closeAuthModals() {
     setShowLoginModal(false);
     setShowRegisterModal(false);
-  }, []);
+  }
 
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      ...state,
-      login,
-      register,
-      logout,
-      refreshUser,
-      showLoginModal,
-      showRegisterModal,
-      openLoginModal,
-      openRegisterModal,
-      closeAuthModals,
-    }),
-    [
-      state,
-      login,
-      register,
-      logout,
-      refreshUser,
-      showLoginModal,
-      showRegisterModal,
-      openLoginModal,
-      openRegisterModal,
-      closeAuthModals,
-    ]
-  );
+  const value: AuthContextValue = {
+    user,
+    isAuthenticated,
+    isLoading,
+    login,
+    register,
+    logout,
+    refreshUser,
+    showLoginModal,
+    showRegisterModal,
+    openLoginModal,
+    openRegisterModal,
+    closeAuthModals,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

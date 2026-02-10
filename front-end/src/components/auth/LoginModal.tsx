@@ -57,7 +57,8 @@ export function LoginModal() {
     if (showLoginModal) {
       reset();
     }
-  }, [showLoginModal, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showLoginModal]);
 
   return (
     <Modal isOpen={showLoginModal} onClose={closeAuthModals} title="Sign In">

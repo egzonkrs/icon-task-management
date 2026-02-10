@@ -1,97 +1,72 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { z } from "zod";
 
-interface UseFormOptions<T> {
-  initialValues: T;
-  schema: z.ZodSchema<T>;
-  onSubmit: (values: T) => Promise<void>;
-  validateOnChange?: boolean;
+interface UseFormOptions {
+  initialValues: Record<string, any>;
+  schema: z.ZodSchema;
+  onSubmit: (values: any) => Promise<void>;
 }
 
-export function useForm<T extends Record<string, any>>({
-  initialValues,
-  schema,
-  onSubmit,
-  validateOnChange = true,
-}: UseFormOptions<T>) {
-  const [values, setValues] = useState<T>(initialValues);
-  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
-  const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
+export function useForm({ initialValues, schema, onSubmit }: UseFormOptions) {
+  const [values, setValues] = useState(initialValues);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  const valuesRef = useRef(values);
   const initialValuesRef = useRef(initialValues);
   const schemaRef = useRef(schema);
   const onSubmitRef = useRef(onSubmit);
 
-  useEffect(() => {
-    initialValuesRef.current = initialValues;
-    schemaRef.current = schema;
-    onSubmitRef.current = onSubmit;
-  });
+  valuesRef.current = values;
+  initialValuesRef.current = initialValues;
+  schemaRef.current = schema;
+  onSubmitRef.current = onSubmit;
 
-  const validateField = useCallback(
-    (name: keyof T, currentValues: T) => {
-      const result = schemaRef.current.safeParse(currentValues);
-      if (!result.success) {
-        const fieldError = result.error.issues.find((issue) => issue.path[0] === name);
-        if (fieldError) {
-          setErrors((prev) => ({ ...prev, [name]: fieldError.message }));
-          return;
-        }
+  function validateField(name: string, currentValues: Record<string, any>) {
+    const result = schemaRef.current.safeParse(currentValues);
+    if (!result.success) {
+      const fieldError = result.error.issues.find((issue) => issue.path[0] === name);
+      if (fieldError) {
+        setErrors((prev) => ({ ...prev, [name]: fieldError.message }));
+        return;
       }
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    },
-    []
-  );
+    }
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  }
 
-  const handleChange = useCallback(
-    (name: keyof T, value: any) => {
-      setValues((prev) => {
-        const newValues = { ...prev, [name]: value };
-        if (validateOnChange) {
-          setTouched((prevTouched) => {
-            if (prevTouched[name]) {
-              validateField(name, newValues);
-            }
-            return prevTouched;
-          });
-        }
-        return newValues;
-      });
-    },
-    [validateOnChange, validateField]
-  );
+  function handleChange(name: string, value: any) {
+    const newValues = { ...valuesRef.current, [name]: value };
+    valuesRef.current = newValues;
+    setValues(newValues);
+  }
 
-  const handleBlur = useCallback(
-    (name: keyof T) => {
-      setTouched((prev) => ({ ...prev, [name]: true }));
-      setValues((current) => {
-        validateField(name, current);
-        return current;
-      });
-    },
-    [validateField]
-  );
+  function handleBlur(name: string) {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    validateField(name, valuesRef.current);
+  }
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  async function handleSubmit(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     setErrors({});
     setServerError(null);
 
-    const result = schemaRef.current.safeParse(values);
+    const result = schemaRef.current.safeParse(valuesRef.current);
     if (!result.success) {
-      const newErrors: Partial<Record<keyof T, string>> = {};
-      const newTouched: Partial<Record<keyof T, boolean>> = {};
-
+      const newErrors: Record<string, string> = {};
+      const newTouched: Record<string, boolean> = {};
       result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as keyof T;
+        const field = String(issue.path[0]);
         if (!newErrors[field]) {
           newErrors[field] = issue.message;
         }
         newTouched[field] = true;
       });
-
       setErrors(newErrors);
       setTouched(newTouched);
       return;
@@ -100,19 +75,21 @@ export function useForm<T extends Record<string, any>>({
     setIsSubmitting(true);
     try {
       await onSubmitRef.current(result.data);
-    } catch (err: any) {
+    } catch (err) {
       throw err;
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
-  const reset = useCallback((newValues?: T) => {
-    setValues(newValues || initialValuesRef.current);
+  function reset(newValues?: Record<string, any>) {
+    const resetTo = newValues || initialValuesRef.current;
+    valuesRef.current = resetTo;
+    setValues(resetTo);
     setErrors({});
     setTouched({});
     setServerError(null);
-  }, []);
+  }
 
   return {
     values,

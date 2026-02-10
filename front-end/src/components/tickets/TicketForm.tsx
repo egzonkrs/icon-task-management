@@ -79,7 +79,8 @@ export function TicketForm({
     if (isOpen) {
       reset(getInitialFormData(ticket));
     }
-  }, [isOpen, ticket, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, ticket]);
 
   return (
     <Modal

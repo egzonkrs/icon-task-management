@@ -9,48 +9,14 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTickets } from "@/hooks/useTickets";
-import { TicketForm } from "@/components/tickets";
-import { Button, Badge } from "@/components/ui";
-import type { Ticket, TicketPriority, TicketStatus } from "@/types";
+import { TicketBoard, TicketForm } from "@/components/tickets";
+import { Button } from "@/components/ui";
 import type { CreateTicketFormData, UpdateTicketFormData } from "@/lib/validation";
-
-const priorityVariant: Record<TicketPriority, "slate" | "indigo" | "amber" | "coral"> = {
-  Low: "slate",
-  Medium: "indigo",
-  High: "amber",
-  Critical: "coral",
-};
-
-const statusOptions: { label: string; value: TicketStatus }[] = [
-  { label: "Open", value: "Open" },
-  { label: "In Progress", value: "InProgress" },
-  { label: "In Review", value: "InReview" },
-  { label: "Done", value: "Done" },
-  { label: "Closed", value: "Closed" },
-];
-
-function formatDate(dateStr: string | null): string | null {
-  if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-  });
-}
 
 export function Dashboard() {
   const { isAuthenticated, isLoading: authLoading, openLoginModal } = useAuth();
-  const {
-    tickets,
-    isLoading,
-    createTicket,
-    updateTicket,
-    deleteTicket,
-    changeStatus,
-    setFilter,
-    filter,
-  } = useTickets();
+  const { tickets, isLoading, createTicket, setFilter, filter } = useTickets();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
 
   const stats = useMemo(() => {
     const total = tickets.length;
@@ -73,22 +39,6 @@ export function Dashboard() {
     });
   };
 
-  const handleEditSubmit = async (
-    data: CreateTicketFormData | UpdateTicketFormData
-  ) => {
-    if (!editingTicket) return;
-    await updateTicket(editingTicket.id, {
-      title: data.title,
-      description: data.description || undefined,
-      priority: data.priority || "Medium",
-      dueDate: data.dueDate || undefined,
-    });
-  };
-
-  const handleStatusChange = async (id: string, status: TicketStatus) => {
-    await changeStatus(id, status);
-  };
-
   if (authLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -103,9 +53,12 @@ export function Dashboard() {
         <div className="flex h-16 w-16 items-center justify-center bg-black">
           <ListTodo className="h-8 w-8 text-accent-500" />
         </div>
-        <h1 className="text-3xl font-extrabold text-slate-900">Welcome to Icon</h1>
+        <h1 className="text-3xl font-extrabold text-slate-900">
+          Welcome to Icon
+        </h1>
         <p className="max-w-md text-base font-medium text-slate-500">
-          A simple task management system. Sign in to start organizing your work.
+          A simple task management system. Sign in to start
+          organizing your work.
         </p>
         <Button onClick={openLoginModal} size="lg">
           Get Started
@@ -153,7 +106,9 @@ export function Dashboard() {
             type="text"
             placeholder="Search tickets..."
             value={filter.search ?? ""}
-            onChange={(e) => setFilter({ ...filter, search: e.target.value || undefined })}
+            onChange={(e) =>
+              setFilter({ ...filter, search: e.target.value || undefined })
+            }
             className="w-full border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20"
           />
         </div>
@@ -168,35 +123,14 @@ export function Dashboard() {
         <div className="flex h-40 items-center justify-center">
           <div className="h-8 w-8 animate-spin border-4 border-accent-200 border-t-accent-500" />
         </div>
-      ) : tickets.length === 0 ? (
-        <div className="flex h-40 items-center justify-center border border-slate-200 bg-white">
-          <p className="text-sm font-medium text-slate-400">No tickets yet. Create one to get started.</p>
-        </div>
       ) : (
-        <div className="flex flex-col border border-slate-200 bg-white">
-          {tickets.map((ticket) => (
-            <TicketRow
-              key={ticket.id}
-              ticket={ticket}
-              onEdit={setEditingTicket}
-              onDelete={deleteTicket}
-              onStatusChange={handleStatusChange}
-            />
-          ))}
-        </div>
+        <TicketBoard />
       )}
 
       <TicketForm
         isOpen={showCreateForm}
         onClose={() => setShowCreateForm(false)}
         onSubmit={handleCreateSubmit}
-      />
-
-      <TicketForm
-        isOpen={editingTicket !== null}
-        onClose={() => setEditingTicket(null)}
-        onSubmit={handleEditSubmit}
-        ticket={editingTicket}
       />
     </div>
   );
@@ -221,68 +155,6 @@ function StatCard({ icon, label, value, color, hasBorder = false }: StatCardProp
       <div>
         <p className="text-2xl font-extrabold text-slate-900">{value}</p>
         <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{label}</p>
-      </div>
-    </div>
-  );
-}
-
-interface TicketRowProps {
-  ticket: Ticket;
-  onEdit: (ticket: Ticket) => void;
-  onDelete: (id: string) => void;
-  onStatusChange: (id: string, status: TicketStatus) => void;
-}
-
-function TicketRow({ ticket, onEdit, onDelete, onStatusChange }: TicketRowProps) {
-  const overdue = !ticket.isCompleted && ticket.dueDate && new Date(ticket.dueDate) < new Date();
-
-  return (
-    <div className="flex items-center gap-4 border-b border-slate-100 px-4 py-3 last:border-b-0 hover:bg-slate-50 transition-colors">
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-slate-900 truncate">{ticket.title}</p>
-        {ticket.description && (
-          <p className="text-xs font-medium text-slate-500 truncate mt-0.5">{ticket.description}</p>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2 shrink-0">
-        <Badge variant={priorityVariant[ticket.priority]}>{ticket.priority}</Badge>
-
-        <select
-          value={ticket.status}
-          onChange={(e) => onStatusChange(ticket.id, e.target.value as TicketStatus)}
-          className="text-xs font-bold text-slate-600 border border-slate-200 bg-white px-2 py-1 focus:outline-none focus:border-accent-500 cursor-pointer"
-        >
-          {statusOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-
-        {ticket.dueDate && (
-          <span className={`text-xs font-bold ${overdue ? "text-danger-600" : "text-slate-400"}`}>
-            {formatDate(ticket.dueDate)}
-          </span>
-        )}
-
-        {ticket.isCompleted && (
-          <CheckSquare className="h-4 w-4 text-success-500" />
-        )}
-
-        <button
-          onClick={() => onEdit(ticket)}
-          className="px-2 py-1 text-xs font-bold text-accent-600 hover:bg-accent-50 transition-colors cursor-pointer"
-        >
-          Edit
-        </button>
-
-        <button
-          onClick={() => onDelete(ticket.id)}
-          className="p-1 text-slate-300 hover:text-danger-500 transition-colors cursor-pointer"
-        >
-          &times;
-        </button>
       </div>
     </div>
   );

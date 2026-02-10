@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react";
 import { ticketService } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import type {
@@ -17,14 +10,11 @@ import type {
   GetTicketsParams,
 } from "@/types";
 
-interface TicketState {
+interface TicketContextValue {
   tickets: Ticket[];
   isLoading: boolean;
   error: string | null;
   filter: GetTicketsParams;
-}
-
-interface TicketContextValue extends TicketState {
   fetchTickets: () => Promise<void>;
   createTicket: (data: CreateTicketRequest) => Promise<void>;
   updateTicket: (id: string, data: UpdateTicketRequest) => Promise<void>;
@@ -40,138 +30,101 @@ export const TicketContext = createContext<TicketContextValue | null>(null);
 
 export function TicketProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
-  const [state, setState] = useState<TicketState>({
-    tickets: [],
-    isLoading: false,
-    error: null,
-    filter: {},
-  });
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<GetTicketsParams>({});
 
-  const fetchTickets = useCallback(async () => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+  async function fetchTickets() {
+    setIsLoading(true);
+    setError(null);
     try {
-      const envelope = await ticketService.getTickets(state.filter);
-      setState((prev) => ({
-        ...prev,
-        tickets: envelope.items,
-        isLoading: false,
-      }));
+      const envelope = await ticketService.getTickets(filter);
+      setTickets(envelope.items);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load tickets";
-      setState((prev) => ({ ...prev, error: message, isLoading: false }));
+      setError(message);
+    } finally {
+      setIsLoading(false);
     }
-  }, [state.filter]);
+  }
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchTickets();
     } else {
-      setState((prev) => ({ ...prev, tickets: [], isLoading: false }));
+      setTickets([]);
+      setIsLoading(false);
     }
-  }, [isAuthenticated, fetchTickets]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, filter]);
 
-  const createTicket = useCallback(
-    async (data: CreateTicketRequest) => {
-      await ticketService.createTicket(data);
-      await fetchTickets();
-    },
-    [fetchTickets]
-  );
+  async function createTicket(data: CreateTicketRequest) {
+    await ticketService.createTicket(data);
+    await fetchTickets();
+  }
 
-  const updateTicket = useCallback(
-    async (id: string, data: UpdateTicketRequest) => {
-      await ticketService.updateTicket(id, data);
-      await fetchTickets();
-    },
-    [fetchTickets]
-  );
+  async function updateTicket(id: string, data: UpdateTicketRequest) {
+    await ticketService.updateTicket(id, data);
+    await fetchTickets();
+  }
 
-  const deleteTicket = useCallback(
-    async (id: string) => {
-      await ticketService.deleteTicket(id);
-      await fetchTickets();
-    },
-    [fetchTickets]
-  );
+  async function deleteTicket(id: string) {
+    await ticketService.deleteTicket(id);
+    await fetchTickets();
+  }
 
-  const changeStatus = useCallback(
-    async (id: string, status: TicketStatus) => {
-      await ticketService.changeStatus(id, { status });
-      await fetchTickets();
-    },
-    [fetchTickets]
-  );
+  async function changeStatus(id: string, status: TicketStatus) {
+    await ticketService.changeStatus(id, { status });
+    await fetchTickets();
+  }
 
-  const completeTicket = useCallback(
-    async (id: string) => {
-      await ticketService.completeTicket(id);
-      await fetchTickets();
-    },
-    [fetchTickets]
-  );
+  async function completeTicket(id: string) {
+    await ticketService.completeTicket(id);
+    await fetchTickets();
+  }
 
-  const reorderTickets = useCallback(
-    async (items: ReorderTicketItem[]) => {
-      setState((prev) => {
-        const updated = [...prev.tickets];
-        for (const item of items) {
-          const ticket = updated.find((t) => t.id === item.id);
-          if (ticket) {
-            ticket.sortOrder = item.sortOrder;
-          }
+  // optimistic update for smooth drag-and-drop UX
+  async function reorderTickets(items: ReorderTicketItem[]) {
+    setTickets((prev) => {
+      const updated = [...prev];
+      for (const item of items) {
+        const ticket = updated.find((t) => t.id === item.id);
+        if (ticket) {
+          ticket.sortOrder = item.sortOrder;
         }
-        return { ...prev, tickets: updated };
-      });
-
-      try {
-        await ticketService.reorderTickets({ items });
-      } catch {
-        await fetchTickets();
       }
-    },
-    [fetchTickets]
-  );
+      return updated;
+    });
 
-  const setFilter = useCallback((filter: GetTicketsParams) => {
-    setState((prev) => ({ ...prev, filter }));
-  }, []);
+    try {
+      await ticketService.reorderTickets({ items });
+    } catch {
+      await fetchTickets();
+    }
+  }
 
-  const getTicketsByStatus = useCallback(
-    (status: TicketStatus) =>
-      state.tickets
-        .filter((t) => t.status === status)
-        .sort((a, b) => a.sortOrder - b.sortOrder),
-    [state.tickets]
-  );
+  function getTicketsByStatus(status: TicketStatus): Ticket[] {
+    return tickets
+      .filter((t) => t.status === status)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }
 
-  const value = useMemo<TicketContextValue>(
-    () => ({
-      ...state,
-      fetchTickets,
-      createTicket,
-      updateTicket,
-      deleteTicket,
-      changeStatus,
-      completeTicket,
-      reorderTickets,
-      setFilter,
-      getTicketsByStatus,
-    }),
-    [
-      state,
-      fetchTickets,
-      createTicket,
-      updateTicket,
-      deleteTicket,
-      changeStatus,
-      completeTicket,
-      reorderTickets,
-      setFilter,
-      getTicketsByStatus,
-    ]
-  );
+  const value: TicketContextValue = {
+    tickets,
+    isLoading,
+    error,
+    filter,
+    fetchTickets,
+    createTicket,
+    updateTicket,
+    deleteTicket,
+    changeStatus,
+    completeTicket,
+    reorderTickets,
+    setFilter,
+    getTicketsByStatus,
+  };
 
-  return (
-    <TicketContext.Provider value={value}>{children}</TicketContext.Provider>
-  );
+  return <TicketContext.Provider value={value}>{children}</TicketContext.Provider>;
 }

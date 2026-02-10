@@ -19,7 +19,7 @@ public sealed class TicketsByUserSpecification : Specification<Ticket>
             var term = search.Trim().ToLowerInvariant();
             Criteria = ticket => ticket.UserId == userId
                 && (!isCompleted.HasValue || ticket.IsCompleted == isCompleted.Value)
-                && ticket.Title.Value.Contains(term, StringComparison.InvariantCultureIgnoreCase);
+                && ticket.Title.Value.ToLower().Contains(term);
         }
 
         ApplyOrderBy(ticket => ticket.SortOrder);
