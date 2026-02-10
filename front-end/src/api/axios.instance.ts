@@ -33,7 +33,11 @@ apiClient.interceptors.response.use(
       const status = error.response.status;
 
       if (status === 401) {
-        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+        const url = error.response.config?.url ?? "";
+        const isAuthCheck = url.includes("/auth/me");
+        if (!isAuthCheck) {
+          window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+        }
       }
 
       const errorMessage = apiResponse?.errors
