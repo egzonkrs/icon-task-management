@@ -24,4 +24,22 @@ public static class TicketMapper
             UpdatedAt = ticket.UpdatedAt
         };
     }
+
+    public static TicketDetailResponse ToDetailResponse(Ticket ticket)
+    {
+        return new()
+        {
+            Id = ticket.Id.ToString(),
+            Title = ticket.Title.Value,
+            Description = ticket.Description?.Value,
+            Priority = ticket.Priority.ToString(),
+            Status = ticket.Status.ToString(),
+            DueDate = ticket.DueDate,
+            SortOrder = ticket.SortOrder,
+            IsCompleted = ticket.IsCompleted,
+            CompletedAt = ticket.CompletedAt,
+            CreatedAt = ticket.CreatedAt,
+            UpdatedAt = ticket.UpdatedAt
+        };
+    }
 }

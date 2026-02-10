@@ -38,6 +38,19 @@ public static class ControllerBaseExtensions
             });
         }
 
+        var isForbidden = result.Errors.Any(err => err is CustomFluentError customError &&
+            customError.Code.Equals("FORBIDDEN", StringComparison.OrdinalIgnoreCase));
+
+        if (isForbidden)
+        {
+            return controller.StatusCode((int)HttpStatusCode.Forbidden, new ApiResponse<TData>
+            {
+                IsFailed = result.IsFailed,
+                IsSuccess = result.IsSuccess,
+                Errors = result.Errors.ToCodeMessageDictionary()
+            });
+        }
+
         var isNotFound = result.Errors.Any(err => err is CustomFluentError cfe &&
             cfe.Code.EndsWith("_NOT_FOUND", StringComparison.OrdinalIgnoreCase));
 

@@ -1,14 +1,17 @@
-using Icon.Application.Abstractions;
 using Icon.Domain.Repositories;
 using Icon.Infrastructure.Data;
 using Icon.Infrastructure.Data.Repositories;
-using Icon.Infrastructure.Services;
 using Icon.SharedKernel.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Icon.Api.Modules;
 
+/// <summary>
+/// Registers EF Core, repositories, and the Unit of Work.
+/// </summary>
 public sealed class DataModule : IModule
 {
     private readonly IConfiguration _configuration;
@@ -33,6 +36,5 @@ public sealed class DataModule : IModule
         services.TryAddScoped(typeof(IReadRepository<,>), typeof(EfRepository<,>));
         services.TryAddScoped(typeof(IRepository<,>), typeof(EfRepository<,>));
         services.TryAddScoped<ITicketRepository, TicketRepository>();
-        services.TryAddScoped<IUserContextAccessor, UserContextAccessor>();
     }
 }

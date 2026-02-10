@@ -1,6 +1,6 @@
 using FluentResults;
 using Icon.Application.Abstractions;
-using Icon.Domain.Common;
+using Icon.Domain.Common.Errors;
 using Icon.Domain.Repositories;
 using Icon.SharedKernel.Abstractions;
 using MediatR;

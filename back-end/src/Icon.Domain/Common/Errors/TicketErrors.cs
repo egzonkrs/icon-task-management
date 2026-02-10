@@ -1,6 +1,6 @@
 using Icon.SharedKernel.Common;
 
-namespace Icon.Domain.Common;
+namespace Icon.Domain.Common.Errors;
 
 public static class TicketErrors
 {

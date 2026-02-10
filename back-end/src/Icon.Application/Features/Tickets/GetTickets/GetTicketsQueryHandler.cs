@@ -15,7 +15,9 @@ public sealed class GetTicketsQueryHandler : IRequestHandler<GetTicketsQuery, Re
     private readonly ITicketRepository _ticketRepository;
     private readonly IUserContextAccessor _userContextAccessor;
 
-    public GetTicketsQueryHandler(ITicketRepository ticketRepository, IUserContextAccessor userContextAccessor)
+    public GetTicketsQueryHandler(
+        ITicketRepository ticketRepository,
+        IUserContextAccessor userContextAccessor)
     {
         _ticketRepository = ticketRepository;
         _userContextAccessor = userContextAccessor;
@@ -24,10 +26,12 @@ public sealed class GetTicketsQueryHandler : IRequestHandler<GetTicketsQuery, Re
     public async Task<Result<GetTicketsResponse>> Handle(GetTicketsQuery request, CancellationToken cancellationToken)
     {
         var userId = _userContextAccessor.UserId;
+
         var spec = new TicketsByUserSpecification(userId, request.IsCompleted, request.Search);
         var tickets = await _ticketRepository.ListAsync(spec, cancellationToken);
 
         var items = tickets.Select(TicketMapper.ToResponse);
+
         return Result.Ok(new GetTicketsResponse { Items = items });
     }
 }
