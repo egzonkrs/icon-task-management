@@ -1,6 +1,6 @@
 using FluentResults;
 using Icon.Application.Abstractions;
-using Icon.Domain.Common;
+using Icon.Domain.Common.Errors;
 using Icon.Domain.Enums;
 using Icon.Domain.Repositories;
 using Icon.Domain.ValueObjects;
@@ -35,7 +35,6 @@ public sealed class UpdateTicketCommandHandler : IRequestHandler<UpdateTicketCom
         {
             return Result.Fail(TicketErrors.NotFound(request.Id));
         }
-
         if (ticket.UserId != _userContextAccessor.UserId)
         {
             return Result.Fail(TicketErrors.Unauthorized());
@@ -47,7 +46,7 @@ public sealed class UpdateTicketCommandHandler : IRequestHandler<UpdateTicketCom
 
         if (request.Priority is not null)
         {
-            var isPriorityValid = Enum.TryParse<TicketPriority>(request.Priority, ignoreCase: true, out var priority);
+            var isPriorityValid = Enum.TryParse<TicketPriority>(request.Priority, ignoreCase: true, out TicketPriority priority);
 
             if (!isPriorityValid)
             {

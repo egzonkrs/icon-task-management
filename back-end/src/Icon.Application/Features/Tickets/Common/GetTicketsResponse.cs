@@ -1,9 +1,14 @@
+using System.Text.Json.Serialization;
+
 namespace Icon.Application.Features.Tickets.Common;
 
 /// <summary>
-/// Response model for getting a list of tickets.
+/// Response containing a list of tickets.
 /// </summary>
 public sealed class GetTicketsResponse
 {
-    public IEnumerable<TicketResponse> Items { get; init; } = [];
+    [JsonConstructor]
+    public GetTicketsResponse() { }
+
+    public IEnumerable<TicketResponse> Items { get; init; } = Array.Empty<TicketResponse>();
 }

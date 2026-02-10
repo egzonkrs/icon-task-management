@@ -1,5 +1,3 @@
-using Icon.Domain.Enums;
-
 namespace Icon.Api.Contracts.Tickets;
 
 /// <summary>
@@ -7,23 +5,15 @@ namespace Icon.Api.Contracts.Tickets;
 /// </summary>
 public sealed record UpdateTicketRequest
 {
-    /// <summary>
-    /// The title of the ticket.
-    /// </summary>
+    /// <summary>The new title.</summary>
     public required string Title { get; init; }
-    
-    /// <summary>
-    /// The description of the ticket.
-    /// </summary>
+
+    /// <summary>The new description.</summary>
     public string? Description { get; init; }
-    
-    /// <summary>
-    /// The priority of the ticket.
-    /// </summary>
-    public TicketPriority Priority { get; init; }
-    
-    /// <summary>
-    /// The due date of the ticket.
-    /// </summary>
+
+    /// <summary>The new priority of the ticket.</summary>
+    public string? Priority { get; init; }
+
+    /// <summary>The new due date.</summary>
     public DateTime? DueDate { get; init; }
 }

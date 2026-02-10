@@ -6,12 +6,38 @@ using Icon.SharedKernel.Domain;
 
 namespace Icon.Domain.Entities;
 
+/// <summary>
+/// Aggregate root representing a ticket in the system.
+/// </summary>
 public sealed class Ticket : DomainEntity, IEntity<Ulid>
 {
-    public Ulid Id { get; private set; }
-    public string UserId { get; private set; } = default!;
-    public TicketTitle Title { get; private set; } = default!;
-    public TicketDescription Description { get; private set; } = default!;
+    private Ticket(
+        Ulid id,
+        string userId,
+        TicketTitle title,
+        TicketDescription description,
+        TicketPriority priority,
+        TicketStatus status,
+        DateTime? dueDate)
+    {
+        Id = id;
+        UserId = userId;
+        Title = title;
+        Description = description;
+        Priority = priority;
+        Status = status;
+        DueDate = dueDate;
+        SortOrder = 0;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    private Ticket() { }
+
+    public Ulid Id { get; set; }
+    public string UserId { get; private set; } = null!;
+    public TicketTitle Title { get; private set; } = null!;
+    public TicketDescription Description { get; private set; } = null!;
     public TicketPriority Priority { get; private set; }
     public TicketStatus Status { get; private set; }
     public DateTime? DueDate { get; private set; }
@@ -21,35 +47,24 @@ public sealed class Ticket : DomainEntity, IEntity<Ulid>
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
-    private Ticket()
-    {
-    }
-
+    /// <summary>
+    /// Factory method to create a new ticket.
+    /// </summary>
     public static Ticket Create(
         string userId,
         TicketTitle title,
         TicketDescription description,
-        TicketPriority priority,
-        DateTime? dueDate)
+        TicketPriority priority = TicketPriority.Medium,
+        DateTime? dueDate = null)
     {
-        var ticket = new Ticket
-        {
-            Id = Ulid.NewUlid(),
-            UserId = userId,
-            Title = title,
-            Description = description,
-            Priority = priority,
-            Status = TicketStatus.Open,
-            DueDate = dueDate,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
+        var ticket = new Ticket(Ulid.NewUlid(), userId, title, description, priority, TicketStatus.Open, dueDate);
         ticket.RaiseDomainEvent(new TicketCreatedDomainEvent(ticket.Id));
-
         return ticket;
     }
 
+    /// <summary>
+    /// Updates mutable ticket details.
+    /// </summary>
     public void UpdateDetails(TicketTitle title, TicketDescription description, DateTime? dueDate)
     {
         Title = title;
@@ -57,13 +72,19 @@ public sealed class Ticket : DomainEntity, IEntity<Ulid>
         DueDate = dueDate;
         UpdatedAt = DateTime.UtcNow;
     }
-    
+
+    /// <summary>
+    /// Assigns a new priority level.
+    /// </summary>
     public void AssignPriority(TicketPriority priority)
     {
         Priority = priority;
         UpdatedAt = DateTime.UtcNow;
     }
-    
+
+    /// <summary>
+    /// Transitions the ticket to a new status.
+    /// </summary>
     public void ChangeStatus(TicketStatus newStatus)
     {
         var oldStatus = Status;
@@ -85,7 +106,19 @@ public sealed class Ticket : DomainEntity, IEntity<Ulid>
 
         RaiseDomainEvent(new TicketStatusChangedDomainEvent(Id, oldStatus, newStatus));
     }
-    
+
+    /// <summary>
+    /// Updates the sort order for drag-and-drop positioning.
+    /// </summary>
+    public void Reorder(int sortOrder)
+    {
+        SortOrder = sortOrder;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Marks the ticket as completed by setting status to Done.
+    /// </summary>
     public void MarkAsCompleted()
     {
         if (IsCompleted)
@@ -95,4 +128,5 @@ public sealed class Ticket : DomainEntity, IEntity<Ulid>
 
         ChangeStatus(TicketStatus.Done);
     }
+
 }

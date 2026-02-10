@@ -1,6 +1,6 @@
 using FluentResults;
 using Icon.Application.Abstractions;
-using Icon.Domain.Common;
+using Icon.Domain.Common.Errors;
 using Icon.Domain.Entities;
 using Icon.Domain.Enums;
 using Icon.Domain.Repositories;
