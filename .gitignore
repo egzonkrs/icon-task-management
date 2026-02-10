@@ -5,6 +5,9 @@
 icon.db
 icon.db*
 
+# Assignment
+assignment.md
+
 # dotenv files
 .env
 
