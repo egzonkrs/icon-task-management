@@ -12,7 +12,7 @@ public sealed class UpdateTicketCommandValidator : AbstractValidator<UpdateTicke
             .NotEmpty().WithMessage("Title is required.");
 
         RuleFor(x => x.DueDate)
-            .GreaterThan(DateTime.UtcNow).WithMessage("Due date must be in the future.")
+            .GreaterThanOrEqualTo(DateTime.UtcNow.Date).WithMessage("Due date must not be in the past.")
             .When(x => x.DueDate.HasValue);
     }
 }
