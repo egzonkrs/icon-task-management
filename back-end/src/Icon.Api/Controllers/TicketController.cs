@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Icon.Api.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -32,9 +32,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
+                  "http://localhost:3000",
                   "http://localhost:5173",
                   "http://localhost:5174",
-                  "http://localhost:5175")
+                  "http://localhost:5175",
+                  "http://localhost:5176")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -43,7 +45,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-using (IServiceScope scope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
     var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
     await initializer.InitializeAsync();

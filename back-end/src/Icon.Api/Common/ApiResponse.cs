@@ -1,4 +1,4 @@
-namespace Icon.Api.Extensions.Controller;
+namespace Icon.Api.Common;
 
 /// <summary>
 /// Represents a standardized API response.
