@@ -1,8 +1,6 @@
-using System.Net;
 using FluentResults;
-using Icon.Api.Contracts.Common;
-using Icon.SharedKernel.Common;
 using Microsoft.AspNetCore.Mvc;
+using Icon.SharedKernel.Common;
 
 namespace Icon.Api.Extensions.Controller;
 
@@ -14,7 +12,7 @@ public static class ControllerBaseExtensions
     /// <summary>
     /// Creates an ActionResult from a Result{T} by mapping it to an ApiResponse{T}.
     /// </summary>
-    public static IActionResult ToActionResult<TData>(this ControllerBase controller, Result<TData> result, HttpStatusCode successCode = HttpStatusCode.OK)
+    public static IActionResult ToActionResult<TData>(this ControllerBase controller, Result<TData> result, System.Net.HttpStatusCode successCode = System.Net.HttpStatusCode.OK)
     {
         if (result.IsSuccess)
         {
@@ -30,7 +28,7 @@ public static class ControllerBaseExtensions
 
         if (result.IsFailed && result.HasException<Exception>())
         {
-            return controller.StatusCode((int)HttpStatusCode.InternalServerError, new ApiResponse<TData>
+            return controller.StatusCode((int)System.Net.HttpStatusCode.InternalServerError, new ApiResponse<TData>
             {
                 IsFailed = result.IsFailed,
                 IsSuccess = result.IsSuccess,
@@ -56,7 +54,7 @@ public static class ControllerBaseExtensions
 
         if (isForbidden)
         {
-            return controller.StatusCode((int)HttpStatusCode.Forbidden, new ApiResponse<TData>
+            return controller.StatusCode((int)System.Net.HttpStatusCode.Forbidden, new ApiResponse<TData>
             {
                 IsFailed = result.IsFailed,
                 IsSuccess = result.IsSuccess,
@@ -69,7 +67,7 @@ public static class ControllerBaseExtensions
 
         if (result.IsFailed && isNotFound)
         {
-            return controller.StatusCode((int)HttpStatusCode.NotFound, new ApiResponse<TData>
+            return controller.StatusCode((int)System.Net.HttpStatusCode.NotFound, new ApiResponse<TData>
             {
                 IsFailed = result.IsFailed,
                 IsSuccess = result.IsSuccess,

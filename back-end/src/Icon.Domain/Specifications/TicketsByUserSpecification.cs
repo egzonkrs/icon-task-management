@@ -7,20 +7,21 @@ public sealed class TicketsByUserSpecification : Specification<Ticket>
 {
     public TicketsByUserSpecification(string userId, bool? isCompleted = null, string? search = null)
     {
-        Criteria = ticket => ticket.UserId == userId
-                             && IsCompletedMatch(ticket, isCompleted)
-                             && SearchMatch(ticket, search);
+        Criteria = ticket => ticket.UserId == userId;
 
-        ApplyOrderBy(t => t.SortOrder);
-    }
+        if (isCompleted.HasValue)
+        {
+            Criteria = ticket => ticket.UserId == userId && ticket.IsCompleted == isCompleted.Value;
+        }
 
-    private static bool IsCompletedMatch(Ticket t, bool? isCompleted)
-    {
-        return !isCompleted.HasValue || t.IsCompleted == isCompleted.Value;
-    }
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLowerInvariant();
+            Criteria = ticket => ticket.UserId == userId
+                && (!isCompleted.HasValue || ticket.IsCompleted == isCompleted.Value)
+                && ticket.Title.Value.Contains(term, StringComparison.InvariantCultureIgnoreCase);
+        }
 
-    private static bool SearchMatch(Ticket t, string? search)
-    {
-        return string.IsNullOrWhiteSpace(search) || t.Title.Value.Contains(search, StringComparison.CurrentCultureIgnoreCase);
+        ApplyOrderBy(ticket => ticket.SortOrder);
     }
 }

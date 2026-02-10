@@ -8,7 +8,6 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Modules
 builder.Services.AddModule(new CoreModule());
 builder.Services.AddModule(new DataModule(builder.Configuration));
 builder.Services.AddModule(new AuthenticationModule(builder.Configuration));
@@ -41,7 +40,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Initialize Database
 using (IServiceScope scope = app.Services.CreateScope())
 {
     var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();

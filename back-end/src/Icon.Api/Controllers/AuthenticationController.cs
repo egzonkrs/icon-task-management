@@ -10,8 +10,6 @@ using Icon.Application.Features.Authentication.Login;
 using Icon.Application.Features.Authentication.Logout;
 using Icon.Application.Features.Authentication.RefreshToken;
 using Icon.Application.Features.Authentication.Register;
-using Microsoft.AspNetCore.Http;
-using Icon.Api.Contracts;
 
 namespace Icon.Api.Controllers;
 

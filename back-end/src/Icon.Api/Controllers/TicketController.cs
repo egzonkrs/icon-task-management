@@ -14,8 +14,6 @@ using Icon.Application.Features.Tickets.GetTickets;
 using Icon.Application.Features.Tickets.ReorderTickets;
 using Icon.Application.Features.Tickets.UpdateTicket;
 using ApplicationReorderTicketItem = Icon.Application.Features.Tickets.ReorderTickets.ReorderTicketItem;
-using Microsoft.AspNetCore.Http;
-using Icon.Api.Contracts;
 
 namespace Icon.Api.Controllers;
 

@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Icon.Api.Extensions.Controller;
 using Icon.Application.Features.Users.Common;
 using Icon.Application.Features.Users.GetUsers;
-using Microsoft.AspNetCore.Http;
-using Icon.Api.Contracts;
 
 namespace Icon.Api.Controllers;
 

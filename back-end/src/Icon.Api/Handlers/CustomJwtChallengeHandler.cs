@@ -1,4 +1,3 @@
-using Icon.Api.Contracts;
 using Icon.Api.Extensions.Controller;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 

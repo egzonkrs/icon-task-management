@@ -1,6 +1,7 @@
 namespace Icon.SharedKernel.Abstractions;
 
-public interface IRepository<TEntity, in TPrimaryKey> : IReadRepository<TEntity, TPrimaryKey> where TEntity : class, IEntity<TPrimaryKey>
+public interface IRepository<TEntity, TPrimaryKey> : IReadRepository<TEntity, TPrimaryKey>
+    where TEntity : class, IEntity<TPrimaryKey>
 {
     Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
