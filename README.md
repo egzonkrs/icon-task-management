@@ -1,6 +1,6 @@
-# Icon — Task Management System
+# Icon - Simple Task Management System
 
-**Live:** [https://icon-tm-b5djbraadfaefpdj.westeurope-01.azurewebsites.net](https://icon-tm-b5djbraadfaefpdj.westeurope-01.azurewebsites.net)
+**Live here:** [https://icon-tm-b5djbraadfaefpdj.westeurope-01.azurewebsites.net](https://icon-tm-b5djbraadfaefpdj.westeurope-01.azurewebsites.net) 🔴
 
 A ticket management app with a .NET back-end API and a React front-end.
 Users can sign up, log in, and then create / edit / delete / reorder tickets.
