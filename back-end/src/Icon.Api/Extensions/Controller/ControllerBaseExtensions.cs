@@ -38,6 +38,19 @@ public static class ControllerBaseExtensions
             });
         }
 
+        var isUnauthorized = result.Errors.Any(err => err is CustomFluentError customError &&
+            customError.Code.Equals("INVALID_CREDENTIALS", StringComparison.OrdinalIgnoreCase));
+
+        if (isUnauthorized)
+        {
+            return controller.Unauthorized(new ApiResponse<TData>
+            {
+                IsFailed = result.IsFailed,
+                IsSuccess = result.IsSuccess,
+                Errors = result.Errors.ToCodeMessageDictionary()
+            });
+        }
+
         var isForbidden = result.Errors.Any(err => err is CustomFluentError customError &&
             customError.Code.Equals("FORBIDDEN", StringComparison.OrdinalIgnoreCase));
 

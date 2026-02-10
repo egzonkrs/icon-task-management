@@ -11,6 +11,7 @@ public static class AuthenticationErrors
     public static CustomFluentError InvalidCredentials => new("INVALID_CREDENTIALS", "Invalid email or password.");
     public static CustomFluentError AccountLocked => new("ACCOUNT_LOCKED", "Account is locked. Please try again later.");
     public static CustomFluentError RefreshTokenMissing => new("INVALID_REFRESH_TOKEN", "Refresh token is missing.");
+    public static CustomFluentError RefreshTokenInvalid => new("INVALID_REFRESH_TOKEN", "Refresh token is invalid.");
     public static CustomFluentError AccessTokenMissing => new("INVALID_ACCESS_TOKEN", "Access token is missing.");
     public static CustomFluentError AccessTokenInvalid => new("INVALID_ACCESS_TOKEN", "Invalid access token.");
     public static CustomFluentError AccessTokenInvalidFormat => new("INVALID_ACCESS_TOKEN", "Invalid access token format.");

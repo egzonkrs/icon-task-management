@@ -1,5 +1,8 @@
 namespace Icon.Domain.ValueObjects;
 
+/// <summary>
+/// Value object representing a ticket description with validation.
+/// </summary>
 public sealed record TicketDescription
 {
     public string Value { get; }
@@ -8,7 +11,8 @@ public sealed record TicketDescription
 
     public static TicketDescription Create(string? value)
     {
-        var sanitized = value ?? string.Empty;
-        return new TicketDescription(sanitized);
+        return new TicketDescription(value ?? string.Empty);
     }
+
+    public static implicit operator string(TicketDescription description) => description.Value;
 }

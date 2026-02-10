@@ -5,13 +5,20 @@ using Icon.Infrastructure.Data.Specifications;
 
 namespace Icon.Infrastructure.Data.Repositories;
 
-public class EfRepository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey> where TEntity : class, IEntity<TPrimaryKey>
+/// <summary>
+/// Generic EF Core repository implementation with specification support.
+/// </summary>
+/// <typeparam name="TEntity">The entity type.</typeparam>
+/// <typeparam name="TPrimaryKey">The entity key type.</typeparam>
+public class EfRepository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey>
+    where TEntity : class, IEntity<TPrimaryKey>
 {
     private readonly DbContext _dbContext;
     private readonly DbSet<TEntity> _dbSet;
 
     public EfRepository(DbContext dbContext)
     {
+        ArgumentNullException.ThrowIfNull(dbContext);
         _dbContext = dbContext;
         _dbSet = _dbContext.Set<TEntity>();
     }
@@ -26,32 +33,24 @@ public class EfRepository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryK
         return await SpecificationEvaluator.GetQuery(_dbSet.AsQueryable(), specification).FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<List<TResult>> ListAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TResult>> ListAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default)
     {
         return await SpecificationEvaluator.GetQuery(_dbSet.AsQueryable(), specification).ToListAsync(cancellationToken);
     }
 
-    public async Task<List<TEntity>> ListAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TEntity>> ListAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
     {
         return await SpecificationEvaluator.GetQuery(_dbSet.AsQueryable(), specification).ToListAsync(cancellationToken);
     }
 
     public async Task<int> CountAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsQueryable();
-        
-        if (specification.Criteria is not null)
-        {
-            query = query.Where(specification.Criteria);
-        }
-
-        return await query.CountAsync(cancellationToken);
+        return await CountInternalAsync(specification, cancellationToken);
     }
 
     public async Task<bool> AnyAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsQueryable();
-        
         if (specification.Criteria is not null)
         {
             query = query.Where(specification.Criteria);
@@ -70,23 +69,34 @@ public class EfRepository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryK
         await _dbSet.AddRangeAsync(entities, cancellationToken);
     }
 
-    public void Update(TEntity entity)
-    {
-        _dbSet.Update(entity);
-    }
+    public void Update(TEntity entity) => _dbSet.Update(entity);
+    public void UpdateRange(IEnumerable<TEntity> entities) => _dbSet.UpdateRange(entities);
+    public void Remove(TEntity entity) => _dbSet.Remove(entity);
+    public void RemoveRange(IEnumerable<TEntity> entities) => _dbSet.RemoveRange(entities);
 
-    public void UpdateRange(IEnumerable<TEntity> entities)
+    private async Task<int> CountInternalAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken)
     {
-        _dbSet.UpdateRange(entities);
-    }
+        var query = _dbSet.AsQueryable();
+        if (specification.Criteria is not null)
+        {
+            query = query.Where(specification.Criteria);
+        }
 
-    public void Remove(TEntity entity)
-    {
-        _dbSet.Remove(entity);
-    }
+        foreach (var includeExpression in specification.Includes)
+        {
+            query = query.Include(includeExpression);
+        }
 
-    public void RemoveRange(IEnumerable<TEntity> entities)
-    {
-        _dbSet.RemoveRange(entities);
+        foreach (var includeString in specification.IncludeStrings)
+        {
+            query = query.Include(includeString);
+        }
+
+        if (specification.AsNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.CountAsync(cancellationToken);
     }
 }
