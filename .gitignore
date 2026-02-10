@@ -8,6 +8,12 @@ icon.db*
 # dotenv files
 .env
 
+# Front-end build output
+front-end/dist/
+
+# IDE
+.idea/
+
 # User-specific files
 *.rsuser
 *.suo
