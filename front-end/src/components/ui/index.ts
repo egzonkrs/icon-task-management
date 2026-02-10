@@ -1,6 +1,6 @@
-export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Input } from "./Input";
-export { Modal } from "./Modal";
-export { Select } from "./Select";
 export { TextArea } from "./TextArea";
+export { Select } from "./Select";
+export { Modal } from "./Modal";
+export { Badge } from "./Badge";
