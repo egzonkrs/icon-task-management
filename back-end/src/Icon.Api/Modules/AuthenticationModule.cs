@@ -32,8 +32,7 @@ public sealed class AuthenticationModule : IModule
         var jwtSection = _configuration.GetSection(JwtSettings.SectionName);
         services.Configure<JwtSettings>(jwtSection);
 
-        var jwtSettings = jwtSection.Get<JwtSettings>()
-            ?? throw new InvalidOperationException("JWT settings are not configured.");
+        var jwtSettings = jwtSection.Get<JwtSettings>() ?? throw new InvalidOperationException("JWT settings are not configured.");
 
         services.AddIdentityCore<ApplicationUser>(options =>
         {
