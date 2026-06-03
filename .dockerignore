@@ -1,0 +1,39 @@
+# Source control
+.git
+.gitignore
+.gitattributes
+.github
+
+# Editor / IDE
+.vs
+.vscode
+.idea
+**/*.user
+**/*.suo
+
+# Node
+**/node_modules
+**/npm-debug.log
+
+# .NET build artifacts
+**/bin
+**/obj
+**/TestResults
+
+# Frontend build output (regenerated in image)
+front-end/dist
+
+# Local-only env (.env.production is kept for the production build)
+front-end/.env
+front-end/.env.local
+
+# Tests not needed in runtime image
+back-end/tests
+
+# Compose / Docker / docs (not needed for image build)
+docker-compose.yml
+publish
+
+# OS
+.DS_Store
+Thumbs.db
