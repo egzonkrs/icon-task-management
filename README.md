@@ -1,6 +1,6 @@
 # Icon - Simple Task Management System
 
-**Live here:** [https://icon-tm-b5djbraadfaefpdj.westeurope-01.azurewebsites.net](https://icon-tm-b5djbraadfaefpdj.westeurope-01.azurewebsites.net) 🔴
+**Live here:** [https://icon-task-management-production.up.railway.app/](https://icon-task-management-production.up.railway.app/)
 
 A ticket management app with a .NET back-end API and a React front-end.
 Users can sign up, log in, and then create / edit / delete / reorder tickets.
